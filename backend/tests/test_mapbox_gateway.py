@@ -47,6 +47,18 @@ def test_geocode_raises_on_no_features():
             gateway.geocode("Nowhere, XX")
 
 
+def test_geocode_uses_us_country_bias():
+    with requests_mock.Mocker() as m:
+        m.get(
+            "https://api.mapbox.com/geocoding/v5/mapbox.places/Houston%2C%20TX.json",
+            json=geocode_body(),
+        )
+        gateway = MapboxGateway(TOKEN)
+        gateway.geocode("Houston, TX")
+        request = m.request_history[0]
+        assert request.qs["country"] == ["us"]
+
+
 def test_directions_raises_on_empty_routes():
     with requests_mock.Mocker() as m:
         m.get(

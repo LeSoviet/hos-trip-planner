@@ -17,7 +17,7 @@ class MapboxGateway:
     def geocode(self, address):
         response = requests.get(
             GEOCODE_URL.format(query=quote(address)),
-            params={"access_token": self.token, "limit": 1},
+            params={"access_token": self.token, "limit": 1, "country": "us"},
             timeout=10,
         )
         features = response.json().get("features", [])
