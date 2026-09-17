@@ -18,6 +18,64 @@ export const EVENT_LABELS = {
 
 export const eventLabel = (type) => EVENT_LABELS[type] || type;
 
+const DUTY_TITLES = {
+  driving: { leg0: "Deadhead to pickup", leg1: "Loaded trip to drop-off" },
+  on_duty: { pickup: "Pickup and loading", dropoff: "Delivery and unloading" },
+  fuel: { "": "Fueling" },
+};
+
+export function eventTitle(event) {
+  if (event.type === "sleeper") {
+    const hours = (new Date(event.end) - new Date(event.start)) / 3600000;
+    if (hours >= 34) return "34-hour restart";
+    if (hours >= 10) return "10-hour rest";
+    return "Sleeper berth";
+  }
+  if (event.type === "off_duty") {
+    const hours = (new Date(event.end) - new Date(event.start)) / 3600000;
+    if (hours >= 34) return "34-hour restart";
+    if (hours >= 10) return "10-hour rest";
+    if (hours >= 0.45 && hours <= 0.55) return "30-min break";
+    return "Off duty";
+  }
+  if (event.type === "driving") {
+    const titles = DUTY_TITLES.driving;
+    return event.label === "pickup -> dropoff" ? titles.leg1 : titles.leg0;
+  }
+  if (event.type === "on_duty") {
+    return event.label === "dropoff"
+      ? DUTY_TITLES.on_duty.dropoff
+      : DUTY_TITLES.on_duty.pickup;
+  }
+  if (event.type === "fuel") return DUTY_TITLES.fuel[""];
+  return eventLabel(event.type);
+}
+
+function formatDuration(event) {
+  const minutes = Math.round((new Date(event.end) - new Date(event.start)) / 60000);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} hr` : `${h}.${m} hr`;
+}
+
+export function eventDetail(event) {
+  const parts = [eventLabel(event.type)];
+  if (event.location) parts.push(event.location);
+  parts.push(formatDuration(event));
+  if (event.type === "driving" && event.miles) parts.push(`${Math.round(event.miles)} mi`);
+  return parts.join(" · ").toLowerCase();
+}
+
+export function eventTimeLabel(iso) {
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 const MARKERS = {
   pickup: { color: "#22c55e", label: "Pickup" },
   dropoff: { color: "#ef4444", label: "Dropoff" },

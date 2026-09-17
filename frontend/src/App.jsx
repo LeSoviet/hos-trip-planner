@@ -3,6 +3,7 @@ import TripForm from "./ui/TripForm";
 import MapView from "./ui/MapView";
 import PlanSummary from "./ui/PlanSummary";
 import LogSheetTabs from "./ui/LogSheetTabs";
+import RouteTimeline from "./ui/RouteTimeline";
 import RecentPlans from "./ui/RecentPlans";
 import { createPlanService } from "./application/planService";
 
@@ -58,8 +59,11 @@ export default function App() {
           {plan ? (
             <>
               <PlanSummary plan={plan} />
-              <div className="map-panel">
-                <MapView plan={plan} />
+              <div className="content-split">
+                <div className="map-panel">
+                  <MapView plan={plan} />
+                </div>
+                <RouteTimeline days={plan.days} />
               </div>
               <LogSheetTabs days={plan.days} />
             </>
