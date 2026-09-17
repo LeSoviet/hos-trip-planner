@@ -194,9 +194,20 @@ body {
 .rods-field { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
 .rods-field label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
+.grid-frame {
+  margin-top: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 14px 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .eld-svg {
+  display: block;
   width: 100%;
-  min-width: 820px;
+  min-width: 640px;
   height: auto;
   color: var(--text);
 }
@@ -250,16 +261,6 @@ body {
   color: var(--muted);
 }
 .sheet-header strong { color: var(--text); }
-
-.grid-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-.eld-grid { border-collapse: collapse; width: 100%; min-width: 820px; }
-.eld-grid th, .eld-grid td { border: 1px solid var(--border); font-size: 10.5px; padding: 2px 3px; }
-.eld-grid thead th { color: var(--muted); font-weight: 500; text-align: center; }
-.eld-grid .row-head { text-align: left; font-size: 11px; color: var(--muted); min-width: 130px; white-space: nowrap; }
-.eld-grid .cell { height: 26px; background: var(--panel-2); }
-.eld-grid .cell.filled { opacity: 1; }
-.eld-grid .cell.partial { opacity: 0.55; }
 
 .sheet-legend {
   display: flex;

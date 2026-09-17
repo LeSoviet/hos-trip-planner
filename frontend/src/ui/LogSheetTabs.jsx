@@ -122,12 +122,13 @@ function LogSheet({ day, dayIndex, total, inputs }) {
           </div>
         </div>
       </div>
-      <div className="grid-scroll">
+      <div className="grid-frame">
         <svg
           className="eld-svg"
           viewBox={`-150 -22 ${GRID_W + 150 + 70} ${4 * ROW_H + 70}`}
           role="img"
           aria-label={`ELD grid for ${day.date}`}
+          preserveAspectRatio="xMidYMid meet"
         >
           {/* hour ticks + labels */}
           {Array.from({ length: 25 }, (_, h) => {
@@ -135,8 +136,8 @@ function LogSheet({ day, dayIndex, total, inputs }) {
             const label = h === 0 ? "Midnight" : h === 12 ? "Noon" : h === 24 ? "24" : h;
             return (
               <g key={h}>
-                <line x1={x} y1={-8} x2={x} y2={0} stroke="currentColor" strokeWidth="1" />
-                <text x={x} y={-11} textAnchor="middle" fontSize="9" fill="currentColor">
+                <line x1={x} y1={-8} x2={x} y2={0} stroke="currentColor" strokeWidth="1.4" />
+                <text x={x} y={-11} textAnchor="middle" fontSize="13" fill="currentColor" fontWeight="600">
                   {label}
                 </text>
               </g>
@@ -152,7 +153,7 @@ function LogSheet({ day, dayIndex, total, inputs }) {
                   x2={h * HOUR_W + (q * HOUR_W) / 4}
                   y2={-4}
                   stroke="currentColor"
-                  strokeWidth="0.5"
+                  strokeWidth="0.7"
                   opacity="0.6"
                 />
               ) : null
@@ -160,15 +161,15 @@ function LogSheet({ day, dayIndex, total, inputs }) {
           )}
 
           {/* rows */}
-          {ROWS.map((row, r) => {
-            const y = r * ROW_H;
+          {ROWS.map((row) => {
+            const y = ROWS.indexOf(row) * ROW_H;
             return (
               <g key={row.key} transform={`translate(0 ${y})`}>
-                <line x1={0} y1={0} x2={GRID_W} y2={0} stroke="currentColor" strokeWidth="0.6" opacity="0.35" />
+                <line x1={0} y1={0} x2={GRID_W} y2={0} stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
                 {Array.from({ length: 25 }, (_, h) => (
-                  <line key={h} x1={h * HOUR_W} y1={0} x2={h * HOUR_W} y2={ROW_H} stroke="currentColor" strokeWidth="0.6" opacity="0.35" />
+                  <line key={h} x1={h * HOUR_W} y1={0} x2={h * HOUR_W} y2={ROW_H} stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
                 ))}
-                <text x={-8} y={ROW_H / 2 + 3} textAnchor="end" fontSize="10" fill="currentColor">
+                <text x={-10} y={ROW_H / 2 + 4} textAnchor="end" fontSize="12.5" fill="currentColor" fontWeight="500">
                   {row.label}
                 </text>
                 {segmentsFor(day, row.key).map((s, i) => (
@@ -179,28 +180,25 @@ function LogSheet({ day, dayIndex, total, inputs }) {
                     x2={(s.end / 60) * HOUR_W}
                     y2={ROW_H / 2}
                     stroke="currentColor"
-                    strokeWidth="2.2"
+                    strokeWidth="3"
                     strokeLinecap="butt"
                   />
                 ))}
                 {/* vertical connectors into the row at status-change times */}
                 {verticalConnectors(day, row.key).map((v, i) => (
-                  <line key={`v${i}`} x1={v.x} y1={ROW_H / 2 - 9} x2={v.x} y2={ROW_H / 2 + 9} stroke="currentColor" strokeWidth="1" />
+                  <line key={`v${i}`} x1={v.x} y1={ROW_H / 2 - 10} x2={v.x} y2={ROW_H / 2 + 10} stroke="currentColor" strokeWidth="1.3" />
                 ))}
-                <text x={GRID_W + 8} y={ROW_H / 2 + 3} fontSize="10" fill="currentColor">
+                <text x={GRID_W + 10} y={ROW_H / 2 + 4} fontSize="13" fill="currentColor" fontWeight="600">
                   {totals[row.key]}
                 </text>
               </g>
             );
           })}
-          <line x1={0} y1={4 * ROW_H} x2={GRID_W} y2={4 * ROW_H} stroke="currentColor" strokeWidth="1" />
-          <text x={-8} y={4 * ROW_H - ROW_H + 3} textAnchor="end" fontSize="10" fill="currentColor" opacity="0">
-            .
-          </text>
-          <text x={GRID_W + 8} y={4 * ROW_H + 12} fontSize="10" fill="currentColor" fontWeight="bold">
+          <line x1={0} y1={4 * ROW_H} x2={GRID_W} y2={4 * ROW_H} stroke="currentColor" strokeWidth="1.2" />
+          <text x={GRID_W + 10} y={4 * ROW_H + 16} fontSize="13" fill="currentColor" fontWeight="bold">
             {totals.total}
           </text>
-          <text x={0} y={4 * ROW_H + 12} fontSize="9" fill="currentColor" opacity="0.7">
+          <text x={0} y={4 * ROW_H + 16} fontSize="11" fill="currentColor" opacity="0.7">
             TOTAL HOURS (must equal 24)
           </text>
         </svg>
