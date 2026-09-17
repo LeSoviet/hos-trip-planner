@@ -166,7 +166,12 @@ body {
 .rods-field { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
 .rods-field label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-.eld-svg { width: 100%; height: auto; color: var(--text); }
+.eld-svg {
+  width: 100%;
+  min-width: 820px;
+  height: auto;
+  color: var(--text);
+}
 
 .rods-remarks {
   margin-top: 14px;
@@ -218,7 +223,7 @@ body {
 }
 .sheet-header strong { color: var(--text); }
 
-.grid-scroll { overflow-x: auto; }
+.grid-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 .eld-grid { border-collapse: collapse; width: 100%; min-width: 820px; }
 .eld-grid th, .eld-grid td { border: 1px solid var(--border); font-size: 10.5px; padding: 2px 3px; }
@@ -346,7 +351,7 @@ body {
   .app-content { padding: 14px; gap: 12px; }
   .map-panel { height: 300px; }
   .content-split { flex-direction: column; }
-  .content-split .map-panel { min-height: 300px; }
+  .content-split .map-panel { flex: none; height: 300px; min-height: 300px; }
   .route-timeline { max-height: none; }
   .rods-head { flex-direction: column; gap: 10px; }
   .rods-meta { flex-wrap: wrap; gap: 12px; }
