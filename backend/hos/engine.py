@@ -19,6 +19,7 @@ class Event:
     start: datetime
     end: datetime
     label: str = ""
+    mile_at: float = 0.0
 
 
 @dataclass
@@ -45,7 +46,7 @@ def _split_by_midnight(events):
             end = min(ev.end, _midnight(cur) + timedelta(days=1))
             if not days or days[-1].date != _midnight(cur):
                 days.append(Day(date=_midnight(cur)))
-            days[-1].events.append(Event(ev.type, cur, end, ev.label))
+            days[-1].events.append(Event(ev.type, cur, end, ev.label, ev.mile_at))
             cur = end
     return days
 
@@ -73,6 +74,7 @@ def plan(legs, current_cycle_used_hours, start, leg_labels=None, stop_labels=Non
     drive_since_break = 0
     cycle_min = int(current_cycle_used_hours * 60)
     miles_since_fuel = 0.0
+    total_miles = 0.0
     events = []
 
     while queue:
@@ -94,7 +96,7 @@ def plan(legs, current_cycle_used_hours, start, leg_labels=None, stop_labels=Non
             else:
                 kind = "break"
             rest = _rest_event(kind, clock)
-            events.append(rest)
+            events.append(Event(rest.type, rest.start, rest.end, rest.label, total_miles))
             clock = rest.end
             if kind in ("reset", "restart"):
                 window_start = clock
@@ -109,23 +111,25 @@ def plan(legs, current_cycle_used_hours, start, leg_labels=None, stop_labels=Non
             fuel_at = (FUEL_INTERVAL_MILES - miles_since_fuel) / mph * 60.0
             chunk = min(chunk, fuel_at)
 
-        events.append(Event("driving", clock, clock + timedelta(minutes=chunk), leg_labels[leg_idx]))
+        events.append(Event("driving", clock, clock + timedelta(minutes=chunk), leg_labels[leg_idx], total_miles))
         clock += timedelta(minutes=chunk)
         drive_since_reset += chunk
         drive_since_break += chunk
         cycle_min += chunk
-        miles_since_fuel += chunk / 60.0 * mph
+        chunk_miles_done = chunk / 60.0 * mph
+        miles_since_fuel += chunk_miles_done
+        total_miles += chunk_miles_done
         queue[0][0] -= chunk
 
         if fuel_at is not None and chunk >= fuel_at - 1e-9:
-            events.append(Event("fuel", clock, clock + timedelta(minutes=FUEL_MIN)))
+            events.append(Event("fuel", clock, clock + timedelta(minutes=FUEL_MIN), mile_at=total_miles))
             clock += timedelta(minutes=FUEL_MIN)
             cycle_min += FUEL_MIN
             miles_since_fuel = 0.0
 
         if queue[0][0] <= 1e-9:
             finished = queue.pop(0)
-            events.append(Event("on_duty", clock, clock + timedelta(minutes=STOP_MIN), stop_labels[finished[2]]))
+            events.append(Event("on_duty", clock, clock + timedelta(minutes=STOP_MIN), stop_labels[finished[2]], total_miles))
             clock += timedelta(minutes=STOP_MIN)
             cycle_min += STOP_MIN
 

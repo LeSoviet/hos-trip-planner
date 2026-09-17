@@ -119,6 +119,23 @@ def test_fuel_stop_inserted_at_1000_miles():
 
 
 
+def test_events_carry_cumulative_mile_position():
+    out = plan(
+        legs=[
+            {"hours": 1.0, "miles": 50.0},
+            {"hours": 5.0, "miles": 275.0},
+        ],
+        current_cycle_used_hours=10.0,
+        start=START,
+    )
+    assert [(e.type, e.mile_at) for e in out.days[0].events] == [
+        ("driving", 0.0),
+        ("on_duty", 50.0),
+        ("driving", 50.0),
+        ("on_duty", 325.0),
+    ]
+
+
 def test_pickup_and_dropoff_labels_on_two_leg_trip():
     out = plan(
         legs=[
