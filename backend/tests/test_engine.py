@@ -87,3 +87,48 @@ def test_fourteen_hour_window_cap_triggers_reset():
         ("on_duty", datetime(2026, 1, 6, 6, 0), datetime(2026, 1, 6, 7, 0)),
     ]
     assert out.cycle_used_after_hours == 14.5
+
+
+def test_fuel_stop_inserted_at_1000_miles():
+    out = plan(
+        legs=[
+            {"hours": 8.0, "miles": 480.0},
+            {"hours": 8.0, "miles": 480.0},
+            {"hours": 2.0, "miles": 120.0},
+        ],
+        current_cycle_used_hours=0.0,
+        start=START,
+    )
+    assert as_tuples(out, day=0) == [
+        ("driving", datetime(2026, 1, 5, 6, 0), datetime(2026, 1, 5, 14, 0)),
+        ("on_duty", datetime(2026, 1, 5, 14, 0), datetime(2026, 1, 5, 15, 0)),
+        ("off_duty", datetime(2026, 1, 5, 15, 0), datetime(2026, 1, 5, 15, 30)),
+        ("driving", datetime(2026, 1, 5, 15, 30), datetime(2026, 1, 5, 18, 30)),
+        ("sleeper", datetime(2026, 1, 5, 18, 30), datetime(2026, 1, 6, 0, 0)),
+    ]
+    assert as_tuples(out, day=1) == [
+        ("sleeper", datetime(2026, 1, 6, 0, 0), datetime(2026, 1, 6, 4, 30)),
+        ("driving", datetime(2026, 1, 6, 4, 30), datetime(2026, 1, 6, 9, 30)),
+        ("on_duty", datetime(2026, 1, 6, 9, 30), datetime(2026, 1, 6, 10, 30)),
+        ("driving", datetime(2026, 1, 6, 10, 30), datetime(2026, 1, 6, 11, 10)),
+        ("fuel", datetime(2026, 1, 6, 11, 10), datetime(2026, 1, 6, 11, 25)),
+        ("driving", datetime(2026, 1, 6, 11, 25), datetime(2026, 1, 6, 12, 45)),
+        ("on_duty", datetime(2026, 1, 6, 12, 45), datetime(2026, 1, 6, 13, 45)),
+    ]
+    assert out.cycle_used_after_hours == 21.25
+
+
+
+def test_pickup_and_dropoff_labels_on_two_leg_trip():
+    out = plan(
+        legs=[
+            {"hours": 1.0, "miles": 50.0},
+            {"hours": 5.0, "miles": 275.0},
+        ],
+        current_cycle_used_hours=10.0,
+        start=START,
+    )
+    labels = [(e.type, e.label) for e in out.days[0].events if e.type == "on_duty"]
+    assert labels == [("on_duty", "pickup"), ("on_duty", "dropoff")]
+    assert out.days[0].events[0].label == "current -> pickup"
+    assert out.days[0].events[2].label == "pickup -> dropoff"
