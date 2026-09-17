@@ -209,7 +209,7 @@ function LogSheet({ day, dayIndex, total, inputs }) {
         {/* Mobile: vertical rotated grid — hours flow top-to-bottom */}
         <svg
           className="eld-svg-mobile"
-          viewBox={`-10 -14 ${4 * COL_W + 60} ${GRID_H + 46}`}
+          viewBox={`-64 -16 ${4 * COL_W + 116} ${GRID_H + 44}`}
           role="img"
           aria-label={`ELD grid (vertical) for ${day.date}`}
           preserveAspectRatio="xMidYMid meet"
