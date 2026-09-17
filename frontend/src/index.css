@@ -207,3 +207,29 @@ body {
   font-size: 12px;
   border: 1px solid var(--border);
 }
+
+@media (max-width: 860px) {
+  .app-main { flex-direction: column; }
+  .app-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-content { padding: 14px; gap: 12px; }
+  .map-panel { height: 300px; }
+  .rods-head { flex-direction: column; gap: 10px; }
+  .rods-meta { flex-wrap: wrap; gap: 12px; }
+  .plan-summary { gap: 8px; }
+  .summary-card { flex: 1 1 40%; min-width: 0; padding: 8px 12px; }
+  .summary-value { font-size: 17px; }
+}
+
+@media (max-width: 480px) {
+  .app-header { padding: 12px 14px; }
+  .app-header h1 { font-size: 16px; }
+  .subtitle { font-size: 11px; }
+  .app-content { padding: 10px; }
+  .summary-card { flex: 1 1 44%; }
+  .map-panel { height: 240px; }
+  .rods-meta { flex-direction: column; }
+}
