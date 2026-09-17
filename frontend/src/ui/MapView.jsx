@@ -40,6 +40,12 @@ export default function MapView({ plan }) {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
 
+  const clearHighlight = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    document.querySelectorAll(".map-highlight-ring").forEach((el) => el.remove());
+  };
+
   useEffect(() => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
     const map = new mapboxgl.Map({
