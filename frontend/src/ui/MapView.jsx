@@ -50,14 +50,28 @@ export default function MapView({ plan }) {
     });
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
     mapRef.current = map;
-    return () => map.remove();
+
+    const swallowBenignErrors = (error) => {
+      if (error && error.error && error.error.status === 404) return;
+      if (error && error.error instanceof Error && error.error.message?.includes("aborted")) return;
+    };
+    map.on("error", swallowBenignErrors);
+
+    return () => {
+      clearHighlight();
+      map.off("error", swallowBenignErrors);
+      map.remove();
+    };
   }, []);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !plan) return;
 
+    let cancelled = false;
+
     const draw = () => {
+      if (cancelled || !map._container || map._removed) return;
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
 
@@ -114,11 +128,21 @@ export default function MapView({ plan }) {
         });
       });
 
-      map.fitBounds(bounds, { padding: 70, duration: 800 });
+      if (cancelled || !bounds.isEmpty()) {
+        map.fitBounds(bounds, { padding: 70, duration: 800 });
+      }
     };
 
-    if (map.isStyleLoaded()) draw();
-    else map.once("load", draw);
+    if (map.isStyleLoaded()) {
+      draw();
+    } else {
+      map.once("load", draw);
+    }
+
+    return () => {
+      cancelled = true;
+      map.off("load", draw);
+    };
   }, [plan]);
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
