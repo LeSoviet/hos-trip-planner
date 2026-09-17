@@ -1,5 +1,5 @@
 export default function PlanSummary({ plan }) {
-  const { route, stops, cycle_used_after_hours } = plan;
+  const { route, cycle_used_after_hours } = plan;
   return (
     <div className="plan-summary">
       <div className="summary-card">

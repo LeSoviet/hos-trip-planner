@@ -9,6 +9,32 @@ const STOP_COLORS = {
   dropoff: "#ef4444",
 };
 
+function makeMarkerElement(color, size) {
+  const el = document.createElement("div");
+  el.style.width = `${size}px`;
+  el.style.height = `${size}px`;
+  el.style.borderRadius = "50%";
+  el.style.background = color;
+  el.style.border = "2px solid white";
+  el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.4)";
+  return el;
+}
+
+function stopTitle(kind) {
+  return kind.charAt(0).toUpperCase() + kind.slice(1);
+}
+
+function eventPopupHtml(title, event) {
+  const start = new Date(event.start);
+  const time = start.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `<strong>${title}</strong><br/>${eventLabel(event.type)}<br/>${time}`;
+}
+
 export default function MapView({ plan }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -59,15 +85,17 @@ export default function MapView({ plan }) {
           type: "line",
           source: "route",
           layout: { "line-join": "round", "line-cap": "round" },
-          paint: {
-            "line-color": "#38bdf8",
-            "line-width": 4,
-          },
+          paint: { "line-color": "#38bdf8", "line-width": 4 },
         });
       }
 
       Object.entries(plan.stops).forEach(([kind, coords]) => {
-        addMarker(map, coords, STOP_COLORS[kind], kind, bounds);
+        bounds.extend(coords);
+        const marker = new mapboxgl.Marker({ element: makeMarkerElement(STOP_COLORS[kind], 18) })
+          .setLngLat(coords)
+          .setPopup(new mapboxgl.Popup({ offset: 12 }).setHTML(`<strong>${stopTitle(kind)}</strong>`))
+          .addTo(map);
+        markersRef.current.push(marker);
       });
 
       const { miles } = plan.route;
@@ -77,7 +105,12 @@ export default function MapView({ plan }) {
           if (!marker) return;
           const position = interpoleAlongRoute(coordinates, event.mile_at, miles);
           if (!position) return;
-          addPopupMarker(map, position, marker.color, marker.label, event, bounds);
+          bounds.extend(position);
+          const m = new mapboxgl.Marker({ element: makeMarkerElement(marker.color, 14) })
+            .setLngLat(position)
+            .setPopup(new mapboxgl.Popup({ offset: 12 }).setHTML(eventPopupHtml(marker.label, event)))
+            .addTo(map);
+          markersRef.current.push(m);
         });
       });
 
@@ -87,53 +120,6 @@ export default function MapView({ plan }) {
     if (map.isStyleLoaded()) draw();
     else map.once("load", draw);
   }, [plan]);
-
-  function addMarker(map, coords, color, kind, bounds) {
-    bounds.extend(coords);
-    const el = document.createElement("div");
-    el.style.width = "18px";
-    el.style.height = "18px";
-    el.style.borderRadius = "50%";
-    el.style.background = color;
-    el.style.border = "3px solid white";
-    el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.4)";
-    const marker = new mapboxgl.Marker({ element: el })
-      .setLngLat(coords)
-      .setPopup(
-        new mapboxgl.Popup({ offset: 12 }).setHTML(
-          `<strong>${kind.charAt(0).toUpperCase() + kind.slice(1)}</strong>`
-        )
-      )
-      .addTo(map);
-    markersRef.current.push(marker);
-  }
-
-  function addPopupMarker(map, position, color, title, event, bounds) {
-    bounds.extend(position);
-    const el = document.createElement("div");
-    el.style.width = "14px";
-    el.style.height = "14px";
-    el.style.borderRadius = "50%";
-    el.style.background = color;
-    el.style.border = "2px solid white";
-    el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.4)";
-    const start = new Date(event.start);
-    const time = start.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    const marker = new mapboxgl.Marker({ element: el, color })
-      .setLngLat(position)
-      .setPopup(
-        new mapboxgl.Popup({ offset: 12 }).setHTML(
-          `<strong>${title}</strong><br/>${eventLabel(event.type)}<br/>${time}`
-        )
-      )
-      .addTo(map);
-    markersRef.current.push(marker);
-  }
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }

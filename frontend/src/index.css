@@ -133,7 +133,29 @@ body {
   border: 1px solid var(--border);
 }
 
-.log-sheets { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+.log-sheets { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text); }
+
+.rods-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 6px 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.rods-title { display: flex; flex-direction: column; gap: 2px; font-size: 10.5px; color: var(--muted); }
+.rods-title strong { font-size: 15px; color: var(--text); letter-spacing: 0.4px; }
+.rods-meta { display: flex; gap: 18px; }
+.rods-field { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.rods-field label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.eld-svg { width: 100%; height: auto; color: var(--text); }
+
+.rods-remarks { padding: 10px 8px 4px; }
+.rods-remarks label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+.remarks-lines { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.remark-item { font-size: 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; }
+.remark-item.muted { opacity: 0.5; }
 
 .sheet-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .sheet-tab {

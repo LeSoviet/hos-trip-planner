@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import TripForm from "./ui/TripForm";
 import MapView from "./ui/MapView";
 import PlanSummary from "./ui/PlanSummary";
 import LogSheetTabs from "./ui/LogSheetTabs";
 import RecentPlans from "./ui/RecentPlans";
-import { usePlanService } from "./application/usePlanService";
+import { createPlanService } from "./application/planService";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
+const service = createPlanService(API_BASE);
+
 export default function App() {
-  const service = useMemo(() => usePlanService(API_BASE), []);
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -17,7 +18,7 @@ export default function App() {
 
   useEffect(() => {
     service.getRecentPlans().then(setRecent).catch(() => {});
-  }, [service]);
+  }, []);
 
   const submit = async (inputs) => {
     setLoading(true);
