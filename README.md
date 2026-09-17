@@ -30,6 +30,18 @@ curl -X POST https://hos-trip-planner-api.vercel.app/api/plan \
 - **Database**: Supabase Postgres — plan history (`plans` table, RLS deny-all, backend writes with service role key).
 - **Maps**: Mapbox Geocoding + Directions (miles, drive time, full geometry).
 
+## Tools
+
+| Tool | Role |
+|------|------|
+| **Mapbox API** | Geocoding, Directions (route geometry, miles, drive time) and GL JS map tiles |
+| **Supabase** | Postgres for plan history (RLS deny-all, service-role writes) |
+| **Vercel** | Hosting for both projects (frontend + serverless Django API), deploys from `main` |
+| **GLM 5.3 Flash with OpenCode harness** | AI pair-programmer: engine TDD, adapters, UI, deploy automation |
+| **Supabase MCP** | Project inspection and docs during development |
+| **Vercel CLI** | Project provisioning, env vars, deployment verification |
+| **Context7 MCP** | Up-to-date library docs (Mapbox GL JS, Vercel, pytest) fetched during coding |
+
 ## HOS rules implemented
 
 Property-carrying driver, 70hrs/8days, no adverse driving conditions:
