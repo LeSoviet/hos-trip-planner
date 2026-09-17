@@ -206,16 +206,21 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 16px 14px 10px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .eld-svg {
   display: block;
   width: 100%;
-  min-width: 640px;
   height: auto;
   color: var(--text);
+}
+
+/* Mobile: vertical rotated grid, horizontal one hidden */
+.eld-svg-mobile { display: none; }
+
+@media (max-width: 640px) {
+  .eld-svg { display: none; }
+  .eld-svg-mobile { display: block; width: 100%; max-width: 420px; margin: 0 auto; }
 }
 
 .rods-remarks {

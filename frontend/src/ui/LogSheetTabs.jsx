@@ -4,11 +4,14 @@ import { eventLabel, eventColor } from "../domain/plan";
 const HOUR_W = 44;
 const ROW_H = 26;
 const GRID_W = 24 * HOUR_W;
+const COL_W = 34;
+const HOUR_H = 18;
+const GRID_H = 24 * HOUR_H;
 const ROWS = [
-  { key: "off_duty", label: "1 Off Duty" },
-  { key: "sleeper", label: "2 Sleeper Berth" },
-  { key: "driving", label: "3 Driving" },
-  { key: "on_duty", label: "4 On Duty (Not Driving)" },
+  { key: "off_duty", label: "1 Off Duty", short: "Off" },
+  { key: "sleeper", label: "2 Sleeper Berth", short: "SB" },
+  { key: "driving", label: "3 Driving", short: "Drive" },
+  { key: "on_duty", label: "4 On Duty (Not Driving)", short: "On" },
 ];
 
 function minutesOfDay(iso) {
@@ -123,6 +126,7 @@ function LogSheet({ day, dayIndex, total, inputs }) {
         </div>
       </div>
       <div className="grid-frame">
+        {/* Desktop: horizontal 24h grid */}
         <svg
           className="eld-svg"
           viewBox={`-150 -22 ${GRID_W + 150 + 70} ${4 * ROW_H + 70}`}
@@ -200,6 +204,68 @@ function LogSheet({ day, dayIndex, total, inputs }) {
           </text>
           <text x={0} y={4 * ROW_H + 16} fontSize="11" fill="currentColor" opacity="0.7">
             TOTAL HOURS (must equal 24)
+          </text>
+        </svg>
+        {/* Mobile: vertical rotated grid — hours flow top-to-bottom */}
+        <svg
+          className="eld-svg-mobile"
+          viewBox={`-10 -14 ${4 * COL_W + 60} ${GRID_H + 46}`}
+          role="img"
+          aria-label={`ELD grid (vertical) for ${day.date}`}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {/* hour ticks + labels on the left */}
+          {Array.from({ length: 25 }, (_, h) => {
+            const y = h * HOUR_H;
+            const label = h === 0 ? "12 AM" : h === 12 ? "Noon" : h === 24 ? "12 AM" : h > 12 ? `${h - 12} PM` : `${h} AM`;
+            return (
+              <g key={h}>
+                <line x1={-5} y1={y} x2={0} y2={y} stroke="currentColor" strokeWidth="1.2" />
+                <text x={-9} y={y + 4} textAnchor="end" fontSize="12" fill="currentColor" fontWeight="500">
+                  {label}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* columns */}
+          {ROWS.map((row) => {
+            const x = ROWS.indexOf(row) * COL_W;
+            return (
+              <g key={row.key} transform={`translate(${x} 0)`}>
+                <line x1={0} y1={0} x2={0} y2={GRID_H} stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
+                {Array.from({ length: 25 }, (_, h) => (
+                  <line key={h} x1={0} y1={h * HOUR_H} x2={COL_W} y2={h * HOUR_H} stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
+                ))}
+                <text x={COL_W / 2} y={-6} textAnchor="middle" fontSize="12.5" fill="currentColor" fontWeight="500">
+                  {row.short}
+                </text>
+                {segmentsFor(day, row.key).map((s, i) => (
+                  <line
+                    key={i}
+                    x1={COL_W / 2}
+                    y1={(s.start / 60) * HOUR_H}
+                    x2={COL_W / 2}
+                    y2={(s.end / 60) * HOUR_H}
+                    stroke="currentColor"
+                    strokeWidth="7"
+                    strokeLinecap="round"
+                    opacity="0.95"
+                  />
+                ))}
+                {/* horizontal connectors at status-change times */}
+                {verticalConnectors(day, row.key).map((v, i) => (
+                  <line key={`v${i}`} x1={COL_W / 2 - 10} y1={(v.x / 60) * HOUR_H} x2={COL_W / 2 + 10} y2={(v.x / 60) * HOUR_H} stroke="currentColor" strokeWidth="1.3" />
+                ))}
+                <text x={COL_W + 8} y={GRID_H / 2} fontSize="13" fill="currentColor" fontWeight="600">
+                  {totals[row.key]}
+                </text>
+              </g>
+            );
+          })}
+          <line x1={4 * COL_W} y1={0} x2={4 * COL_W} y2={GRID_H} stroke="currentColor" strokeWidth="1.2" />
+          <text x={4 * COL_W + 8} y={GRID_H + 18} fontSize="13" fill="currentColor" fontWeight="bold">
+            {totals.total}
           </text>
         </svg>
       </div>
