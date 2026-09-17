@@ -136,6 +136,23 @@ def test_events_carry_cumulative_mile_position():
     ]
 
 
+def test_driving_events_carry_segment_miles_across_midnight():
+    out = plan(
+        legs=[
+            {"hours": 1.0, "miles": 50.0},
+            {"hours": 5.0, "miles": 275.0},
+        ],
+        current_cycle_used_hours=10.0,
+        start=datetime(2026, 1, 5, 20, 0),
+    )
+    day0 = [(e.type, round(e.miles, 2)) for e in out.days[0].events]
+    day1 = [(e.type, round(e.miles, 2)) for e in out.days[1].events]
+    # leg1: 275 mi / 5h = 55mph, driving 22:00->03:00 crosses midnight: 2h day0 (110mi), 3h day1 (165mi)
+    assert day0 == [("driving", 50.0), ("on_duty", 0.0), ("driving", 110.0)]
+    assert day1 == [("driving", 165.0), ("on_duty", 0.0)]
+    assert round(sum(m for _, m in day0 if _ == "driving") + sum(m for _, m in day1 if _ == "driving"), 2) == 325.0
+
+
 def test_pickup_and_dropoff_labels_on_two_leg_trip():
     out = plan(
         legs=[

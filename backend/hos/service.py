@@ -10,7 +10,7 @@ class GeocodeError(Exception):
 LEG_LABELS = ["current -> pickup", "pickup -> dropoff"]
 
 
-def _serialize_plan(plan):
+def _serialize_plan(plan, stop_locations):
     days = []
     for day in plan.days:
         events = [
@@ -20,10 +20,18 @@ def _serialize_plan(plan):
                 "end": e.end.isoformat(),
                 "label": e.label,
                 "mile_at": e.mile_at,
+                "miles": round(e.miles, 1),
+                "location": stop_locations.get(e.label, ""),
             }
             for e in day.events
         ]
-        days.append({"date": day.date.date().isoformat(), "events": events})
+        days.append(
+            {
+                "date": day.date.date().isoformat(),
+                "events": events,
+                "total_miles": round(sum(e["miles"] for e in events), 1),
+            }
+        )
     return days
 
 
@@ -48,6 +56,10 @@ def plan_trip(inputs, gateway, store, clock=datetime.now):
     ]
 
     plan = engine_plan(legs, float(inputs["current_cycle_used_hours"]), clock())
+    stop_locations = {
+        "pickup": inputs["pickup_location"],
+        "dropoff": inputs["dropoff_location"],
+    }
     payload = {
         "inputs": inputs,
         "stops": {"current": points[0], "pickup": points[1], "dropoff": points[2]},
@@ -57,7 +69,7 @@ def plan_trip(inputs, gateway, store, clock=datetime.now):
             "coordinates": routes[0]["coordinates"] + routes[1]["coordinates"][1:],
         },
         "legs": legs,
-        "days": _serialize_plan(plan),
+        "days": _serialize_plan(plan, stop_locations),
         "cycle_used_after_hours": plan.cycle_used_after_hours,
     }
     store.save(inputs, payload)
