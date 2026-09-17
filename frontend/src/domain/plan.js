@@ -26,13 +26,13 @@ const DUTY_TITLES = {
 
 export function eventTitle(event) {
   if (event.type === "sleeper") {
-    const hours = (new Date(event.end) - new Date(event.start)) / 3600000;
+    const hours = (new Date(event.end).getTime() - new Date(event.start).getTime()) / 3600000;
     if (hours >= 34) return "34-hour restart";
     if (hours >= 10) return "10-hour rest";
     return "Sleeper berth";
   }
   if (event.type === "off_duty") {
-    const hours = (new Date(event.end) - new Date(event.start)) / 3600000;
+    const hours = (new Date(event.end).getTime() - new Date(event.start).getTime()) / 3600000;
     if (hours >= 34) return "34-hour restart";
     if (hours >= 10) return "10-hour rest";
     if (hours >= 0.45 && hours <= 0.55) return "30-min break";
@@ -52,7 +52,7 @@ export function eventTitle(event) {
 }
 
 function formatDuration(event) {
-  const minutes = Math.round((new Date(event.end) - new Date(event.start)) / 60000);
+  const minutes = Math.round((new Date(event.end).getTime() - new Date(event.start).getTime()) / 60000);
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   if (h === 0) return `${m} min`;
@@ -94,7 +94,7 @@ export const markerFor = (event) => {
   if (event.type === "fuel") return MARKERS.fuel;
   if (event.type === "sleeper") return MARKERS.reset;
   if (event.type === "off_duty") {
-    const hours = (new Date(event.end) - new Date(event.start)) / 3600000;
+    const hours = (new Date(event.end).getTime() - new Date(event.start).getTime()) / 3600000;
     if (hours >= 34) return MARKERS.restart;
     if (hours >= 10) return MARKERS.reset;
     return null;

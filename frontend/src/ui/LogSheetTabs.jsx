@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { eventLabel } from "../domain/plan";
+import { eventLabel, eventColor } from "../domain/plan";
 
 const HOUR_W = 44;
 const ROW_H = 26;
@@ -12,13 +12,19 @@ const ROWS = [
 ];
 
 function minutesOfDay(iso) {
-  return new Date(iso).getUTCHours() * 60 + new Date(iso).getUTCMinutes();
+  const time = iso.slice(11, 16);
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
 }
 
 function segmentsFor(day, type) {
   return day.events
     .filter((e) => e.type === type)
-    .map((e) => ({ start: minutesOfDay(e.start), end: minutesOfDay(e.end), event: e }))
+    .map((e) => ({
+      start: minutesOfDay(e.start),
+      end: e.end.slice(11, 16) === "00:00" && e.end > e.start ? 1440 : minutesOfDay(e.end),
+      event: e,
+    }))
     .filter((s) => s.end > s.start)
     .sort((a, b) => a.start - b.start);
 }
@@ -28,8 +34,8 @@ function verticalConnectors(day, type) {
   return segs.map((s) => ({ x: (s.start / 60) * HOUR_W }));
 }
 
-function remarksFor(day) {
-  return day.events
+function remarksFor(day, inputs) {
+  const items = day.events
     .filter((e) => e.location || (e.type === "on_duty" && e.label) || e.type === "fuel")
     .map((e) => {
       const time = e.start.slice(11, 16);
@@ -37,6 +43,10 @@ function remarksFor(day) {
       if (e.type === "fuel") return `${time} Fuel stop`;
       return `${time} ${e.label}`;
     });
+  if (!items.length && inputs) {
+    return [`${day.date.slice(5)} departed ${inputs.current_location} toward ${inputs.pickup_location}`];
+  }
+  return items;
 }
 
 function totalsFor(day) {
@@ -56,7 +66,7 @@ function totalsFor(day) {
   };
 }
 
-export default function LogSheetTabs({ days }) {
+export default function LogSheetTabs({ days, inputs }) {
   const [active, setActive] = useState(0);
   const day = days[Math.min(active, days.length - 1)];
 
@@ -79,14 +89,14 @@ export default function LogSheetTabs({ days }) {
           </button>
         ))}
       </div>
-      <LogSheet day={day} dayIndex={active} total={days.length} />
+      <LogSheet day={day} dayIndex={active} total={days.length} inputs={inputs} />
     </div>
   );
 }
 
-function LogSheet({ day, dayIndex, total }) {
+function LogSheet({ day, dayIndex, total, inputs }) {
   const totals = totalsFor(day);
-  const remarks = remarksFor(day);
+  const remarks = remarksFor(day, inputs);
   const date = new Date(day.date + "T12:00:00");
 
   return (
@@ -208,6 +218,7 @@ function LogSheet({ day, dayIndex, total }) {
       <div className="sheet-legend">
         {day.events.map((e, i) => (
           <span key={i} className="legend-item">
+            <span className="dot" style={{ background: eventColor(e.type) }} />
             {eventLabel(e.type)} {e.start.slice(11, 16)}–{e.end.slice(11, 16)}
             {e.location ? ` · ${e.location}` : e.label ? ` · ${e.label}` : ""}
           </span>
