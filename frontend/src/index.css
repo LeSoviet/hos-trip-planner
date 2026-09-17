@@ -23,7 +23,24 @@ body {
 .app-header {
   padding: 14px 22px;
   border-bottom: 1px solid var(--border);
-  background: var(--panel);
+  background: linear-gradient(180deg, #101b33 0%, var(--panel) 100%);
+}
+
+.brand { display: flex; align-items: center; gap: 14px; }
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  color: #06121f;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
 }
 
 .app-header h1 {
@@ -151,10 +168,31 @@ body {
 
 .eld-svg { width: 100%; height: auto; color: var(--text); }
 
-.rods-remarks { padding: 10px 8px 4px; }
-.rods-remarks label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
-.remarks-lines { display: flex; flex-wrap: wrap; gap: 6px 14px; }
-.remark-item { font-size: 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; }
+.rods-remarks {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.rods-remarks label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: block;
+  margin-bottom: 8px;
+}
+.remarks-lines { display: flex; flex-wrap: wrap; gap: 7px; }
+.remark-item {
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  color: var(--text);
+}
 .remark-item.muted { opacity: 0.5; }
 
 .sheet-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -193,12 +231,21 @@ body {
 .sheet-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  padding: 10px 6px 2px;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 0;
   font-size: 11.5px;
   color: var(--muted);
 }
-.legend-item { display: inline-flex; align-items: center; gap: 5px; }
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
 .legend-item .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
 .mapboxgl-popup-content {

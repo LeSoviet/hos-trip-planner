@@ -43,11 +43,14 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div>
-          <h1>HOS Trip Planner</h1>
-          <p className="subtitle">
-            FMCSA property-carrying 70h/8d · 11h driving · 14h window · 30min break
-          </p>
+        <div className="brand">
+          <span className="brand-mark">HOS</span>
+          <div>
+            <h1>Trip Planner</h1>
+            <p className="subtitle">
+              FMCSA property-carrying 70h/8d · 11h driving · 14h window · 30min break
+            </p>
+          </div>
         </div>
       </header>
       <main className="app-main">
@@ -65,7 +68,7 @@ export default function App() {
                 </div>
                 <RouteTimeline days={plan.days} />
               </div>
-              <LogSheetTabs days={plan.days} />
+              <LogSheetTabs days={plan.days} inputs={plan.inputs} />
             </>
           ) : (
             <div className="empty-state">
