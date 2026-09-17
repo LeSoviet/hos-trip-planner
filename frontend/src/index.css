@@ -54,6 +54,12 @@ body {
   font-weight: 600;
 }
 
+/* Desktop: everything visible at once, nav hidden */
+@media (min-width: 861px) {
+  .app-nav { display: none; }
+  .log-sheet-mobile-hidden { display: block !important; }
+}
+
 .brand { display: flex; align-items: center; gap: 14px; }
 
 .brand-mark {
@@ -380,6 +386,8 @@ body {
   .app-header { padding: 12px 14px; }
   .app-nav { width: 100%; }
   .nav-btn { flex: 1; }
+  /* Mobile: alternate blocks via nav */
+  .mobile-hidden { display: none; }
   .app-content { padding: 14px; gap: 12px; }
   .map-panel { height: 300px; }
   .content-split { flex-direction: column; }

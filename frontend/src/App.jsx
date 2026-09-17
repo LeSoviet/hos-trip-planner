@@ -93,18 +93,23 @@ export default function App() {
                 log sheets.
               </p>
             </div>
-          ) : view === VIEWS.planner ? (
+          ) : (
             <>
-              <PlanSummary plan={plan} />
-              <div className="content-split">
-                <div className="map-panel">
-                  <MapView plan={plan} />
-                </div>
-                <RouteTimeline days={plan.days} />
+              {view === VIEWS.planner && (
+                <>
+                  <PlanSummary plan={plan} />
+                  <div className="content-split">
+                    <div className="map-panel">
+                      <MapView plan={plan} />
+                    </div>
+                    <RouteTimeline days={plan.days} />
+                  </div>
+                </>
+              )}
+              <div className={view === VIEWS.logs ? "" : "mobile-hidden"}>
+                <LogSheetTabs days={plan.days} inputs={plan.inputs} />
               </div>
             </>
-          ) : (
-            <LogSheetTabs days={plan.days} inputs={plan.inputs} />
           )}
         </section>
       </main>
