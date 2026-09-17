@@ -2,7 +2,7 @@ import pytest
 import requests_mock
 
 from hos.adapters.mapbox_gateway import MapboxGateway
-from hos.service import GeocodeError
+from hos.service import GeocodeError, RoutingError
 
 
 TOKEN = "pk.test-token"
@@ -45,6 +45,29 @@ def test_geocode_raises_on_no_features():
         gateway = MapboxGateway(TOKEN)
         with pytest.raises(GeocodeError):
             gateway.geocode("Nowhere, XX")
+
+
+def test_directions_raises_on_empty_routes():
+    with requests_mock.Mocker() as m:
+        m.get(
+            "https://api.mapbox.com/directions/v5/mapbox/driving/-95.369800%2C29.760400%3B-96.797000%2C32.776700",
+            json={"code": "NoRoute", "routes": [], "waypoints": []},
+        )
+        gateway = MapboxGateway(TOKEN)
+        with pytest.raises(RoutingError):
+            gateway.directions([[-95.3698, 29.7604], [-96.797, 32.7767]])
+
+
+def test_directions_raises_on_http_error():
+    with requests_mock.Mocker() as m:
+        m.get(
+            "https://api.mapbox.com/directions/v5/mapbox/driving/-95.369800%2C29.760400%3B-96.797000%2C32.776700",
+            status_code=429,
+            json={"message": "Too Many Requests"},
+        )
+        gateway = MapboxGateway(TOKEN)
+        with pytest.raises(RoutingError):
+            gateway.directions([[-95.3698, 29.7604], [-96.797, 32.7767]])
 
 
 def test_directions_converts_meters_to_miles_and_seconds_to_hours():

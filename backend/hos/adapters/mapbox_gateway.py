@@ -2,7 +2,7 @@ from urllib.parse import quote
 
 import requests
 
-from hos.service import GeocodeError
+from hos.service import GeocodeError, RoutingError
 
 
 GEOCODE_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places/{query}.json"
@@ -32,7 +32,10 @@ class MapboxGateway:
             params={"access_token": self.token, "overview": "full", "geometries": "geojson"},
             timeout=10,
         )
-        route = response.json()["routes"][0]
+        routes = response.json().get("routes", [])
+        if response.status_code != 200 or not routes:
+            raise RoutingError(f"no route found for waypoints: {waypoints} (status {response.status_code})")
+        route = routes[0]
         return {
             "miles": route["distance"] / METERS_PER_MILE,
             "drive_hours": route["duration"] / 3600.0,
