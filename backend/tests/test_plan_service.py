@@ -94,3 +94,27 @@ def test_plan_trip_raises_on_unknown_address():
     bad = dict(INPUTS, pickup_location="Nowhere, XX")
     with pytest.raises(GeocodeError):
         plan_trip(bad, gateway, store, clock=lambda: START)
+
+
+def test_on_duty_events_carry_stop_location():
+    gateway, store = make_service()
+    out = plan_trip(INPUTS, gateway, store, clock=lambda: START)
+    on_duty = [
+        e for day in out["days"] for e in day["events"] if e["type"] == "on_duty"
+    ]
+    assert [(e["label"], e["location"]) for e in on_duty] == [
+        ("pickup", "Dallas, TX"),
+        ("dropoff", "Atlanta, GA"),
+    ]
+
+
+def test_events_carry_miles_and_day_totals():
+    gateway, store = make_service()
+    out = plan_trip(INPUTS, gateway, store, clock=lambda: START)
+    # hand-computed: leg0 172.883mi/3.143h, leg1 1250.623mi/22.74h, mph ~55
+    driving0 = [e for e in out["days"][0]["events"] if e["type"] == "driving"]
+    assert all("miles" in e for e in driving0)
+    # hand-computed with fake gateway (55 mph): day0 driving 189+291+180 min = (189+291+180)/60*55 = 605.0
+    assert round(sum(e["miles"] for e in driving0), 1) == pytest.approx(605.0, abs=0.1)
+    day_miles = [d["total_miles"] for d in out["days"]]
+    assert round(sum(day_miles), 1) == pytest.approx(1423.5, abs=1.0)

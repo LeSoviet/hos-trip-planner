@@ -20,6 +20,7 @@ class Event:
     end: datetime
     label: str = ""
     mile_at: float = 0.0
+    miles: float = 0.0
 
 
 @dataclass
@@ -46,7 +47,10 @@ def _split_by_midnight(events):
             end = min(ev.end, _midnight(cur) + timedelta(days=1))
             if not days or days[-1].date != _midnight(cur):
                 days.append(Day(date=_midnight(cur)))
-            days[-1].events.append(Event(ev.type, cur, end, ev.label, ev.mile_at))
+            fraction = (end - cur) / (ev.end - ev.start) if ev.end > ev.start else 1
+            days[-1].events.append(
+                Event(ev.type, cur, end, ev.label, ev.mile_at, ev.miles * fraction)
+            )
             cur = end
     return days
 
@@ -111,7 +115,16 @@ def plan(legs, current_cycle_used_hours, start, leg_labels=None, stop_labels=Non
             fuel_at = (FUEL_INTERVAL_MILES - miles_since_fuel) / mph * 60.0
             chunk = min(chunk, fuel_at)
 
-        events.append(Event("driving", clock, clock + timedelta(minutes=chunk), leg_labels[leg_idx], total_miles))
+        events.append(
+            Event(
+                "driving",
+                clock,
+                clock + timedelta(minutes=chunk),
+                leg_labels[leg_idx],
+                total_miles,
+                chunk / 60.0 * mph,
+            )
+        )
         clock += timedelta(minutes=chunk)
         drive_since_reset += chunk
         drive_since_break += chunk
