@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from hos.service import plan_trip, GeocodeError
+from hos.service import plan_trip, GeocodeError, RoutingError
 from hos.adapters.mapbox_gateway import MapboxGateway
 from hos.adapters.supabase_store import SupabaseStore
 
@@ -44,6 +44,8 @@ class PlanView(APIView):
             )
         except GeocodeError as error:
             return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        except RoutingError as error:
+            return Response({"detail": str(error)}, status=status.HTTP_502_BAD_GATEWAY)
         return Response(payload)
 
 

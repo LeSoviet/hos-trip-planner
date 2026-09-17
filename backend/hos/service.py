@@ -7,6 +7,10 @@ class GeocodeError(Exception):
     pass
 
 
+class RoutingError(Exception):
+    pass
+
+
 LEG_LABELS = ["current -> pickup", "pickup -> dropoff"]
 
 
