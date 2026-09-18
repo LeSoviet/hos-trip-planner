@@ -4,7 +4,8 @@ import { eventLabel, eventColor } from "../domain/plan";
 const HOUR_W = 44;
 const ROW_H = 26;
 const GRID_W = 24 * HOUR_W;
-const COL_W = 34;
+const COL_W = 46;
+const COL_GAP = 10;
 const HOUR_H = 18;
 const GRID_H = 24 * HOUR_H;
 const ROWS = [
@@ -101,6 +102,14 @@ function LogSheet({ day, dayIndex, total, inputs }) {
   const totals = totalsFor(day);
   const remarks = remarksFor(day, inputs);
   const date = new Date(day.date + "T12:00:00");
+
+  // mobile vertical grid geometry
+  const mobileGridTotalW = ROWS.length * COL_W + (ROWS.length - 1) * COL_GAP;
+  const leftAxisW = 58; // room for "12 AM" / "10 PM" style labels
+  const rightTotalsW = 46; // room for totals column at far right
+  const mobileViewW = leftAxisW + mobileGridTotalW + rightTotalsW;
+  const topLabelH = 26;
+  const mobileViewH = topLabelH + GRID_H + 30;
 
   return (
     <div className="log-sheet">
@@ -206,67 +215,144 @@ function LogSheet({ day, dayIndex, total, inputs }) {
             TOTAL HOURS (must equal 24)
           </text>
         </svg>
-        {/* Mobile: vertical rotated grid — hours flow top-to-bottom */}
+
+        {/* Mobile: vertical rotated grid — hours flow top-to-bottom, columns clearly separated */}
         <svg
           className="eld-svg-mobile"
-          viewBox={`-64 -16 ${4 * COL_W + 116} ${GRID_H + 44}`}
+          viewBox={`0 0 ${mobileViewW} ${mobileViewH}`}
           role="img"
           aria-label={`ELD grid (vertical) for ${day.date}`}
           preserveAspectRatio="xMidYMid meet"
         >
-          {/* hour ticks + labels on the left */}
-          {Array.from({ length: 25 }, (_, h) => {
-            const y = h * HOUR_H;
-            const label = h === 0 ? "12 AM" : h === 12 ? "Noon" : h === 24 ? "12 AM" : h > 12 ? `${h - 12} PM` : `${h} AM`;
-            return (
-              <g key={h}>
-                <line x1={-5} y1={y} x2={0} y2={y} stroke="currentColor" strokeWidth="1.2" />
-                <text x={-9} y={y + 4} textAnchor="end" fontSize="12" fill="currentColor" fontWeight="500">
-                  {label}
-                </text>
-              </g>
-            );
-          })}
+          <g transform={`translate(${leftAxisW} ${topLabelH})`}>
+            {/* hour ticks + labels on the left */}
+            {Array.from({ length: 25 }, (_, h) => {
+              const y = h * HOUR_H;
+              const label =
+                h === 0 ? "12 AM" : h === 12 ? "Noon" : h === 24 ? "12 AM" : h > 12 ? `${h - 12} PM` : `${h} AM`;
+              return (
+                <g key={h}>
+                  <line x1={-6} y1={y} x2={0} y2={y} stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
+                  <text x={-10} y={y + 3.5} textAnchor="end" fontSize="10.5" fill="currentColor" fontWeight="500">
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
 
-          {/* columns */}
-          {ROWS.map((row) => {
-            const x = ROWS.indexOf(row) * COL_W;
-            return (
-              <g key={row.key} transform={`translate(${x} 0)`}>
-                <line x1={0} y1={0} x2={0} y2={GRID_H} stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
-                {Array.from({ length: 25 }, (_, h) => (
-                  <line key={h} x1={0} y1={h * HOUR_H} x2={COL_W} y2={h * HOUR_H} stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
-                ))}
-                <text x={COL_W / 2} y={-6} textAnchor="middle" fontSize="12.5" fill="currentColor" fontWeight="500">
-                  {row.short}
-                </text>
-                {segmentsFor(day, row.key).map((s, i) => (
-                  <line
-                    key={i}
-                    x1={COL_W / 2}
-                    y1={(s.start / 60) * HOUR_H}
-                    x2={COL_W / 2}
-                    y2={(s.end / 60) * HOUR_H}
+            {/* outer frame around all four columns */}
+            <rect
+              x={-1}
+              y={0}
+              width={mobileGridTotalW + 2}
+              height={GRID_H}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1"
+              opacity="0.5"
+            />
+
+            {/* columns */}
+            {ROWS.map((row, idx) => {
+              const x = idx * (COL_W + COL_GAP);
+              return (
+                <g key={row.key} transform={`translate(${x} 0)`}>
+                  {/* column header */}
+                  <text x={COL_W / 2} y={-10} textAnchor="middle" fontSize="12" fill="currentColor" fontWeight="700">
+                    {row.short}
+                  </text>
+
+                  {/* column border */}
+                  <rect
+                    x={0}
+                    y={0}
+                    width={COL_W}
+                    height={GRID_H}
+                    fill="none"
                     stroke="currentColor"
-                    strokeWidth="7"
-                    strokeLinecap="round"
-                    opacity="0.95"
+                    strokeWidth="0.8"
+                    opacity="0.35"
                   />
-                ))}
-                {/* horizontal connectors at status-change times */}
-                {verticalConnectors(day, row.key).map((v, i) => (
-                  <line key={`v${i}`} x1={COL_W / 2 - 10} y1={(v.x / 60) * HOUR_H} x2={COL_W / 2 + 10} y2={(v.x / 60) * HOUR_H} stroke="currentColor" strokeWidth="1.3" />
-                ))}
-                <text x={COL_W + 8} y={GRID_H / 2} fontSize="13" fill="currentColor" fontWeight="600">
-                  {totals[row.key]}
-                </text>
-              </g>
-            );
-          })}
-          <line x1={4 * COL_W} y1={0} x2={4 * COL_W} y2={GRID_H} stroke="currentColor" strokeWidth="1.2" />
-          <text x={4 * COL_W + 8} y={GRID_H + 18} fontSize="13" fill="currentColor" fontWeight="bold">
-            {totals.total}
-          </text>
+
+                  {/* hour gridlines within the column */}
+                  {Array.from({ length: 25 }, (_, h) => (
+                    <line
+                      key={h}
+                      x1={0}
+                      y1={h * HOUR_H}
+                      x2={COL_W}
+                      y2={h * HOUR_H}
+                      stroke="currentColor"
+                      strokeWidth={h % 6 === 0 ? 0.9 : 0.6}
+                      opacity={h % 6 === 0 ? 0.35 : 0.18}
+                    />
+                  ))}
+
+                  {/* duty bar */}
+                  {segmentsFor(day, row.key).map((s, i) => (
+                    <rect
+                      key={i}
+                      x={COL_W / 2 - 4}
+                      y={(s.start / 60) * HOUR_H}
+                      width={8}
+                      height={Math.max(2, ((s.end - s.start) / 60) * HOUR_H)}
+                      rx={4}
+                      fill="currentColor"
+                      opacity="0.95"
+                    />
+                  ))}
+
+                  {/* tick marks at status-change times */}
+                  {verticalConnectors(day, row.key).map((v, i) => (
+                    <line
+                      key={`v${i}`}
+                      x1={COL_W / 2 - 9}
+                      y1={(v.x / 60) * HOUR_H}
+                      x2={COL_W / 2 + 9}
+                      y2={(v.x / 60) * HOUR_H}
+                      stroke="currentColor"
+                      strokeWidth="1.1"
+                      opacity="0.8"
+                    />
+                  ))}
+
+                  {/* per-column total, placed right under the column, not mid-grid */}
+                  <text
+                    x={COL_W / 2}
+                    y={GRID_H + 18}
+                    textAnchor="middle"
+                    fontSize="12"
+                    fill="currentColor"
+                    fontWeight="700"
+                  >
+                    {totals[row.key]}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* grand total, to the right of all columns */}
+            <text
+              x={mobileGridTotalW + 14}
+              y={GRID_H / 2}
+              fontSize="12.5"
+              fill="currentColor"
+              fontWeight="800"
+              textAnchor="start"
+            >
+              {totals.total}
+            </text>
+            <text
+              x={mobileGridTotalW + 14}
+              y={GRID_H / 2 + 16}
+              fontSize="9"
+              fill="currentColor"
+              opacity="0.7"
+              textAnchor="start"
+            >
+              TOTAL
+            </text>
+          </g>
         </svg>
       </div>
       <div className="rods-remarks">

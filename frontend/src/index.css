@@ -220,13 +220,8 @@ body {
 
 @media (max-width: 640px) {
   .eld-svg { display: none; }
-  .eld-svg-mobile {
-    display: block;
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-    color: var(--text);
-  }
+  .eld-svg-mobile { display: block; width: 100%; max-width: 380px; margin: 0 auto; color: var(--text); }
+  .grid-frame { padding: 18px 6px 24px; overflow-x: auto; }
 }
 
 .rods-remarks {

@@ -53,7 +53,7 @@ def test_post_plan_missing_field_returns_400():
 
 @override_settings(SUPABASE_URL="https://wkvtwcfwvxtsjeqsfgkl.supabase.co", SUPABASE_SERVICE_ROLE_KEY="k")
 def test_get_plans_returns_recent():
-    rows = [{"id": "1", "inputs": INPUTS, "plan": {"days": []}, "created_at": "2026-01-05T06:00:00Z"}]
+    rows = [{"id": "1", "inputs": INPUTS, "created_at": "2026-01-05T06:00:00Z"}]
     store = FakeStore()
     store.rows = rows
     views.build_store = lambda: store
@@ -63,6 +63,30 @@ def test_get_plans_returns_recent():
 
     assert response.status_code == 200
     assert response.data == rows
+
+
+@override_settings(SUPABASE_URL="https://wkvtwcfwvxtsjeqsfgkl.supabase.co", SUPABASE_SERVICE_ROLE_KEY="k")
+def test_get_plan_detail_returns_row():
+    row = {"id": "abc", "inputs": INPUTS, "plan": {"days": []}, "created_at": "2026-01-05T06:00:00Z"}
+    store = FakeStore()
+    store.detail = row
+    views.build_store = lambda: store
+
+    client = APIClient()
+    response = client.get("/api/plans/00000000-0000-0000-0000-00000000000a")
+
+    assert response.status_code == 200
+    assert response.data == row
+
+
+@override_settings(SUPABASE_URL="https://wkvtwcfwvxtsjeqsfgkl.supabase.co", SUPABASE_SERVICE_ROLE_KEY="k")
+def test_get_plan_detail_missing_returns_404():
+    views.build_store = lambda: FakeStore()
+
+    client = APIClient()
+    response = client.get("/api/plans/ffffffff-0000-0000-0000-000000000000")
+
+    assert response.status_code == 404
 
 
 def test_cors_header_present():

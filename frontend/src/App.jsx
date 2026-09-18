@@ -42,9 +42,18 @@ export default function App() {
     }
   };
 
-  const reopen = (row) => {
-    setPlan(row.plan);
+  const reopen = async (row) => {
     setError(null);
+    setLoading(true);
+    try {
+      const full = await service.getPlanById(row.id);
+      if (full && full.plan) setPlan(full.plan);
+      else setError("Could not load that plan");
+    } catch {
+      setError("Could not load that plan");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

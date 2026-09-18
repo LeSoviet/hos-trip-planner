@@ -27,9 +27,9 @@ def test_save_posts_row_and_returns_id():
         }
 
 
-def test_recent_gets_rows_descending():
+def test_recent_gets_rows_without_plan_payload():
     rows = [
-        {"id": "00000000-0000-0000-0000-000000000002", "inputs": {}, "plan": {}, "created_at": "2026-01-05T06:00:00Z"},
+        {"id": "00000000-0000-0000-0000-000000000002", "inputs": {}, "created_at": "2026-01-05T06:00:00Z"},
     ]
     with requests_mock.Mocker() as m:
         m.get(
@@ -39,6 +39,24 @@ def test_recent_gets_rows_descending():
         store = SupabaseStore(URL, KEY)
         assert store.recent(limit=5) == rows
         request = m.request_history[0]
-        assert request.qs["select"] == ["id,inputs,plan,created_at"]
+        assert request.qs["select"] == ["id,inputs,created_at"]
         assert request.qs["order"] == ["created_at.desc"]
         assert request.qs["limit"] == ["5"]
+
+
+def test_get_returns_first_row_by_id():
+    row = {"id": "abc", "inputs": {}, "plan": {"days": []}, "created_at": "2026-01-05T06:00:00Z"}
+    with requests_mock.Mocker() as m:
+        m.get(f"{URL}/rest/v1/plans", json=[row])
+        store = SupabaseStore(URL, KEY)
+        assert store.get("abc") == row
+        request = m.request_history[0]
+        assert request.qs["id"] == ["eq.abc"]
+        assert request.qs["select"] == ["id,inputs,plan,created_at"]
+
+
+def test_get_returns_none_when_missing():
+    with requests_mock.Mocker() as m:
+        m.get(f"{URL}/rest/v1/plans", json=[])
+        store = SupabaseStore(URL, KEY)
+        assert store.get("nope") is None
