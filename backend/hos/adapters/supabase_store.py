@@ -24,10 +24,24 @@ class SupabaseStore:
             f"{self.url}/rest/v1/plans",
             headers=self.headers,
             params={
-                "select": "id,inputs,plan,created_at",
+                "select": "id,inputs,created_at",
                 "order": "created_at.desc",
                 "limit": limit,
             },
             timeout=10,
         )
         return response.json()
+
+    def get(self, plan_id):
+        response = requests.get(
+            f"{self.url}/rest/v1/plans",
+            headers=self.headers,
+            params={
+                "select": "id,inputs,plan,created_at",
+                "id": f"eq.{plan_id}",
+                "limit": 1,
+            },
+            timeout=10,
+        )
+        rows = response.json()
+        return rows[0] if rows else None

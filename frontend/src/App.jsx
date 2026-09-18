@@ -11,11 +11,17 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 const service = createPlanService(API_BASE);
 
+const VIEWS = {
+  planner: "planner",
+  logs: "logs",
+};
+
 export default function App() {
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [view, setView] = useState(VIEWS.planner);
 
   useEffect(() => {
     service.getRecentPlans().then(setRecent).catch(() => {});
@@ -27,6 +33,7 @@ export default function App() {
     try {
       const result = await service.getPlan(inputs);
       setPlan(result);
+      setView(VIEWS.planner);
       service.getRecentPlans().then(setRecent).catch(() => {});
     } catch (err) {
       setError(err.message);
@@ -36,8 +43,17 @@ export default function App() {
   };
 
   const reopen = async (row) => {
-    setPlan(row.plan);
     setError(null);
+    setLoading(true);
+    try {
+      const full = await service.getPlanById(row.id);
+      if (full && full.plan) setPlan(full.plan);
+      else setError("Could not load that plan");
+    } catch {
+      setError("Could not load that plan");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,25 +68,32 @@ export default function App() {
             </p>
           </div>
         </div>
+        {plan && (
+          <nav className="app-nav" aria-label="Main">
+            <button
+              className={`nav-btn ${view === VIEWS.planner ? "active" : ""}`}
+              onClick={() => setView(VIEWS.planner)}
+            >
+              Map & Route
+            </button>
+            <button
+              className={`nav-btn ${view === VIEWS.logs ? "active" : ""}`}
+              onClick={() => setView(VIEWS.logs)}
+            >
+              Log Sheets
+            </button>
+          </nav>
+        )}
       </header>
       <main className="app-main">
-        <aside className="app-sidebar">
-          <TripForm onSubmit={submit} loading={loading} error={error} />
-          {recent.length > 0 && <RecentPlans plans={recent} onReopen={reopen} />}
-        </aside>
+        {view === VIEWS.planner && (
+          <aside className="app-sidebar">
+            <TripForm onSubmit={submit} loading={loading} error={error} />
+            {recent.length > 0 && <RecentPlans plans={recent} onReopen={reopen} />}
+          </aside>
+        )}
         <section className="app-content">
-          {plan ? (
-            <>
-              <PlanSummary plan={plan} />
-              <div className="content-split">
-                <div className="map-panel">
-                  <MapView plan={plan} />
-                </div>
-                <RouteTimeline days={plan.days} />
-              </div>
-              <LogSheetTabs days={plan.days} inputs={plan.inputs} />
-            </>
-          ) : (
+          {!plan ? (
             <div className="empty-state">
               <h2>Plan a trip</h2>
               <p>
@@ -79,6 +102,23 @@ export default function App() {
                 log sheets.
               </p>
             </div>
+          ) : (
+            <>
+              {view === VIEWS.planner && (
+                <>
+                  <PlanSummary plan={plan} />
+                  <div className="content-split">
+                    <div className="map-panel">
+                      <MapView plan={plan} />
+                    </div>
+                    <RouteTimeline days={plan.days} />
+                  </div>
+                </>
+              )}
+              <div className={view === VIEWS.logs ? "" : "mobile-hidden"}>
+                <LogSheetTabs days={plan.days} inputs={plan.inputs} />
+              </div>
+            </>
           )}
         </section>
       </main>

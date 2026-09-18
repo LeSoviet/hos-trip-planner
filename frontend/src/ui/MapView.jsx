@@ -63,7 +63,11 @@ export default function MapView({ plan }) {
     };
     map.on("error", swallowBenignErrors);
 
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(containerRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       clearHighlight();
       map.off("error", swallowBenignErrors);
       map.remove();

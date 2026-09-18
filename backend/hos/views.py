@@ -53,3 +53,15 @@ class PlansView(APIView):
     def get(self, request):
         store = build_store()
         return Response(store.recent(limit=20))
+
+
+class PlanDetailView(APIView):
+    def get(self, request, plan_id):
+        row = build_store().get(plan_id)
+        if row is None:
+            return Response(
+                {"detail": "plan not found"},
+                status=status.HTTP_404_NOT_FOUND,
+                content_type="application/json",
+            )
+        return Response(row)

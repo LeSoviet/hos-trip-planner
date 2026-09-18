@@ -29,6 +29,7 @@ class FakeStore:
     def __init__(self):
         self.saved = []
         self.rows = []
+        self.detail = None
 
     def save(self, inputs, plan):
         self.saved.append((inputs, plan))
@@ -38,6 +39,9 @@ class FakeStore:
         if self.rows:
             return self.rows
         return [{"id": "00000000-0000-0000-0000-000000000001", "inputs": self.saved[0][0], "plan": self.saved[0][1], "created_at": "2026-01-05T06:00:00Z"}]
+
+    def get(self, plan_id):
+        return self.detail
 
 
 START = datetime(2026, 1, 5, 6, 0)

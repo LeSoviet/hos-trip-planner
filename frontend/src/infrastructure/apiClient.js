@@ -16,3 +16,9 @@ export async function fetchRecentPlans({ baseUrl }) {
   if (!response.ok) return [];
   return response.json();
 }
+
+export async function fetchPlanById(planId, { baseUrl }) {
+  const response = await fetch(`${baseUrl}/api/plans/${planId}`);
+  if (!response.ok) return null;
+  return response.json();
+}

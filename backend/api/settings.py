@@ -51,7 +51,17 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_PERMISSION_CLASSES': [],
     'UNAUTHENTICATED_USER': None,
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': False,
+        'OPTIONS': {'context_processors': []},
+    },
+]
 
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
 CORS_ALLOW_ALL_ORIGINS = False
